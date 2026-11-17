@@ -1,33 +1,43 @@
 import { readdir, readFile, access } from 'node:fs/promises';
-import { join, resolve, relative, sep } from 'node:path';
+import { join } from 'node:path';
 
-const root = resolve('public');
-async function walk(dir) {
-  const result = [];
-  for (const entry of await readdir(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) result.push(...await walk(path));
-    else if (entry.name.endsWith('.md')) result.push(path);
-  }
-  return result;
-}
+const root = 'src/content/articles';
 let failed = false;
-for (const file of await walk('src/content/articles')) {
-  const content = await readFile(file, 'utf8');
-  const logFile = join('article-logs', relative('src/content/articles', file));
+for (const entry of await readdir(root, { withFileTypes: true })) {
+  if (entry.name === '.gitkeep') continue;
+  if (!entry.isDirectory() || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.name)) {
+    console.error(`${root}/${entry.name}: expected a slug folder`);
+    failed = true;
+    continue;
+  }
+  const dir = join(root, entry.name);
+  let content;
   try {
-    const log = await readFile(logFile, 'utf8');
+    content = await readFile(join(dir, 'article.md'), 'utf8');
+  } catch {
+    console.error(`${dir}: article.md is missing`);
+    failed = true;
+    continue;
+  }
+  try {
+    const log = await readFile(join(dir, 'log.md'), 'utf8');
     if (!log.trim()) throw new Error('empty');
   } catch {
-    console.error(`${file}: article log is missing or empty: ${logFile}`);
+    console.error(`${dir}: log.md is missing or empty`);
     failed = true;
   }
-  const image = content.match(/^image:\s*["']?(\/images\/[^\s"']+)/m)?.[1];
-  if (!image) { console.error(`${file}: image is missing`); failed = true; continue; }
-  const path = resolve(root, `.${image}`);
-  if (!path.startsWith(root + sep)) { console.error(`${file}: invalid image path`); failed = true; continue; }
-  try { await access(path); } catch { console.error(`${file}: image does not exist: ${image}`); failed = true; }
-  if (!/^---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n\s*\S/m.test(content)) { console.error(`${file}: article body is empty`); failed = true; }
+  const image = content.match(/^image:\s*["']?(image\.(?:png|jpe?g|webp))["']?\s*$/im)?.[1];
+  if (!image) {
+    console.error(`${dir}: image must be a local image.png, image.jpg, or image.webp`);
+    failed = true;
+  } else {
+    try { await access(join(dir, image)); }
+    catch { console.error(`${dir}: image is missing: ${image}`); failed = true; }
+  }
+  if (!/^---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n\s*\S/m.test(content)) {
+    console.error(`${dir}: article body is empty`);
+    failed = true;
+  }
 }
 if (failed) process.exitCode = 1;
-else console.log('Article files and images validated.');
+else console.log('Article folders, images, and logs validated.');
