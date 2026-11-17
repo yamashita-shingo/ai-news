@@ -23,8 +23,8 @@ npm.cmd ci
 
 ## 記事の作成から公開まで
 
-1. Codex にニュースのテーマを伝えます。`create-ai-news スキル` が調査、記事・画像生成、3つのコメントスキル、検証の流れを定めています。
-2. Codex が記事用ブランチに成果物をコミットして PR を作成します。本文、画像、出典、架空の3人のコメントを確認し、必要に応じて修正を依頼します。
+1. Codex にニュースのテーマを伝えます。Codex は `create-ai-news` スキルの使用を明示し、調査、記事・画像生成、3つのコメントスキル、検証の流れを定めています。
+2. Codex が記事用ブランチに成果物をコミットして PR を作成します。本文、画像、出典、架空の3人のコメントを確認し、必要に応じて修正を依頼します。サイトやハーネスなど、記事以外の変更に PR は必須ではありません。
 3. あなたが PR をマージすると、GitHub Actions が再検証して GitHub Pages に公開します。承認用フォルダはありません。
 
 初回は GitHub の **Settings → Pages → Build and deployment → Source** で **GitHub Actions** を選択してください。公開先は `https://yamashita-shingo.github.io/ai-news/` です。リポジトリ名や所有者が変わる場合は `astro.config.mjs` を更新します。
