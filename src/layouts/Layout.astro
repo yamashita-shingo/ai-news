@@ -1,0 +1,29 @@
+---
+import '../styles/global.css';
+interface Props { title?: string; description?: string }
+const { title = 'AI SIGNAL — AIの今を、読み解く。', description = 'AIのニュースを、3つの視点とともに。' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#111a17" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#f6f7f2] text-[#17221d] antialiased">
+    <header class="border-b border-[#dfe4da] bg-[#f6f7f2]">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10">
+        <a href={base} class="flex items-center gap-2.5 font-bold tracking-[-0.07em] text-xl" aria-label="AI SIGNAL ホーム"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#17221d] text-[#c4fa4c] text-lg">✳</span> AI SIGNAL<span class="text-[#7b8980]">.</span></a>
+        <a href={`${base}#latest`} class="text-xs font-bold tracking-wide text-[#526157] hover:text-[#17221d]">LATEST NEWS <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+    <slot />
+    <footer class="mt-24 bg-[#17221d] text-[#f6f7f2]"><div class="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-6 py-12 md:flex-row md:items-end md:px-10"><div><p class="text-xl font-bold tracking-tight">✳ AI SIGNAL.</p><p class="mt-3 text-sm text-[#a8b8aa]">AIの今を、いろんな視点で。</p></div><p class="text-xs text-[#a8b8aa]">AI-assisted news, reviewed by humans.</p></div></footer>
+  </body>
+</html>
