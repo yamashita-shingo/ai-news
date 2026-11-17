@@ -31,6 +31,8 @@ npm.cmd ci
 
 ## ハーネスの構成
 
+[ハーネス構造図](docs/harness-architecture.md)で記事制作から公開までの流れとファイルの役割を確認できます。
+
 - [記事制作スキル](.agents/skills/create-ai-news/SKILL.md)：調査から PR 作成までの流れ。記事形式と編集基準は必要に応じて参照します。
 - [開発と検証](docs/development.md)：検証コマンドと制約。
 - [確認と公開](docs/publishing.md)：PR の確認と公開の流れ。
