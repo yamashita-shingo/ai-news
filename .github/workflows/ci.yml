@@ -98,13 +98,22 @@ jobs:
             case "$number" in *[!0-9]*|'') exit 1;; esac
             git fetch --no-tags origin "$sha"
             git worktree add --detach "$RUNNER_TEMP/preview-$number" "$sha"
-            (
+            if (
               cd "$RUNNER_TEMP/preview-$number"
-              npm ci
-              PREVIEW_BASE="/ai-news/previews/pr-$number" npm run build
-            )
-            mkdir -p "dist/previews/pr-$number"
-            cp -a "$RUNNER_TEMP/preview-$number/dist/." "dist/previews/pr-$number/"
+              installed=false
+              for attempt in 1 2 3; do
+                if timeout 180s npm ci --no-audit --no-fund; then installed=true; break; fi
+                echo "Dependency install attempt $attempt failed; retrying."
+                sleep 5
+              done
+              [ "$installed" = true ] && PREVIEW_BASE="/ai-news/previews/pr-$number" npm run build
+            ); then
+              mkdir -p "dist/previews/pr-$number"
+              cp -a "$RUNNER_TEMP/preview-$number/dist/." "dist/previews/pr-$number/"
+            else
+              echo "::warning::Preview build failed for PR #$number; the production site will still be published."
+              echo "Preview build failed for PR #$number. Re-run this workflow after inspecting the logs." >> "$GITHUB_STEP_SUMMARY"
+            fi
           done < "$RUNNER_TEMP/prs.tsv"
       - uses: actions/upload-pages-artifact@v3
         with:
