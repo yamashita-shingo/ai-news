@@ -7,7 +7,7 @@ export async function getStaticPaths() {
 }
 const { article } = Astro.props;
 const { Content } = await render(article);
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/,'') + '/';
 ---
 <Layout title={`${article.data.title} | AI SIGNAL`} description={article.data.description}>
   <main class="mx-auto max-w-4xl px-6 pt-12 md:pt-20"><a href={base} class="text-sm font-bold text-[#718276] hover:text-[#17221d]">← ニュース一覧に戻る</a><div class="mt-12 flex items-center gap-3 text-xs font-bold"><span class="rounded-full bg-[#e5efcf] px-3 py-1.5 text-[#4d6e27]">{article.data.category}</span><time class="text-[#89958b]" datetime={article.data.date.toISOString()}>{new Intl.DateTimeFormat('ja-JP', {year:'numeric',month:'2-digit',day:'2-digit',timeZone:'UTC'}).format(article.data.date)}</time></div><h1 class="mt-6 text-3xl font-bold leading-[1.5] tracking-tight md:text-5xl">{article.data.title}</h1><p class="mt-5 text-base leading-8 text-[#718076]">{article.data.description}</p><img src={`${base}articles/${article.id}/${article.data.image}`} alt={article.data.imageAlt} class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover" />

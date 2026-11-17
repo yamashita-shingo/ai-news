@@ -38,7 +38,11 @@ Temporary article.
   await copyFile('.agents/skills/news-comment-critic/assets/portrait.png', join(fixture, 'image.png'));
 
   build();
-  assert.match(await readFile('dist/index.html', 'utf8'), new RegExp(`articles/${slug}/`));
+  const index = await readFile('dist/index.html', 'utf8');
+  const detail = await readFile(join(output, 'index.html'), 'utf8');
+  assert.ok(index.includes(`href="/ai-news/articles/${slug}/"`), 'index should link to the article under the Pages base path');
+  assert.ok(index.includes(`src="/ai-news/articles/${slug}/image.png"`), 'index thumbnail should use the Pages base path');
+  assert.ok(detail.includes(`src="/ai-news/articles/${slug}/image.png"`), 'detail image should use the Pages base path');
   assert.ok(await exists(join(output, 'index.html')), 'article page should be generated');
   assert.ok(await exists(join(output, 'image.png')), 'article image should be generated');
   assert.ok(!await exists(join(output, 'log.md')), 'production log must not be published');

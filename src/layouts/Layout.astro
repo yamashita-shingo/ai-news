@@ -2,7 +2,7 @@
 import '../styles/global.css';
 interface Props { title?: string; description?: string }
 const { title = 'AI SIGNAL — AIの今を、読み解く。', description = 'AIのニュースを、3つの視点とともに。' } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const base = import.meta.env.BASE_URL.replace(/\/$/,'') + '/';
 ---
 <!doctype html>
 <html lang="ja">
