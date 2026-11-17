@@ -5,7 +5,20 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const articles = defineCollection({
-  loader: glob({ pattern: '*/article.md', base: './src/content/articles', generateId: ({ entry }) => entry.split('/')[0] }),
+  loader: (() => {
+    const articleGlob = glob({ pattern: '*/article.md', base: './src/content/articles', generateId: ({ entry }) => entry.split('/')[0] });
+    return {
+      ...articleGlob,
+      async load(context) {
+        await articleGlob.load(context);
+        // The glob loader can retain cached entries when its last file is removed.
+        const root = resolve(fileURLToPath(context.config.root), 'src/content/articles');
+        for (const id of context.store.keys()) {
+          if (!existsSync(resolve(root, id, 'article.md'))) context.store.delete(id);
+        }
+      },
+    };
+  })(),
   schema: z.object({
     title: z.string().min(1),
     description: z.string().min(1),
