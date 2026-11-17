@@ -35,6 +35,7 @@ AGENTS.md                               # 全体ルールと参照先
 ├── create-ai-news/
 │   ├── SKILL.md                        # 記事制作の手順
 │   └── references/
+│       ├── input-template.md           # テーマなどの入力テンプレート
 │       ├── editorial.md                # 調査・執筆の基準
 │       └── article-format.md           # 記事フォルダとデータ形式
 ├── news-comment-critic/                # 黒瀬 修司
@@ -51,6 +52,7 @@ src/content/articles/<slug>/
 article-logs/README.md                  # 制作ログの記録基準
 src/content.config.ts                   # 記事メタデータのスキーマ
 scripts/validate-articles.mjs           # 記事フォルダ・画像・ログの検証
+scripts/test-article-lifecycle.mjs      # 記事追加・削除後の出力を検証
 src/data/commentators.ts                # 各スキルのプロフィールを集約
 src/pages/                              # ニュース一覧・詳細・画像の出力
 .github/workflows/ci.yml                # PR と main の検証
@@ -60,12 +62,14 @@ docs/development.md                     # 開発・検証の手順
 docs/publishing.md                      # 記事の確認・公開の手順
 ```
 
+記事一覧はビルド時に記事フォルダから生成されます。追加・削除を含む記事 PR を main にマージすると、公開サイトの一覧・詳細ページ・画像にも反映されます。
+
 記事フォルダの `log.md` は PR と公開リポジトリで確認できますが、サイトのページとしては出力されません。コメントスキル配下の人物情報は架空の設定です。
 
 ## 検証と確認の役割分担
 
 - `npm run check` は Astro の型・記事メタデータ、記事フォルダの本文・画像・ログの存在を確認します。`npm run build` は静的サイトを生成します。
-- PR と main 更新時には GitHub Actions が同じ検証・ビルドを実行します。デプロイ用ワークフローも main 更新後に検証・ビルドし、成功した成果物を公開します。
+- PR と main 更新時には GitHub Actions が同じ検証・ビルドに加え、テスト用記事の追加・削除後の出力を確認します。デプロイ用ワークフローも main 更新後に検証・ビルドし、成功した成果物を公開します。
 - 出典の正確さ、画像の内容、コメントの妥当性は自動チェックだけでは保証できません。Codex が制作時に確認し、ユーザーが PR でレビューします。
 - ローカルで検証できない場合は、その理由と未検証事項を記録し、GitHub Actions の結果を確認します。
 
