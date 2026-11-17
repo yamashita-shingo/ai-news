@@ -1,5 +1,5 @@
 import { readdir, readFile, access } from 'node:fs/promises';
-import { join, resolve, sep } from 'node:path';
+import { join, resolve, relative, sep } from 'node:path';
 
 const root = resolve('public');
 async function walk(dir) {
@@ -14,6 +14,14 @@ async function walk(dir) {
 let failed = false;
 for (const file of await walk('src/content/articles')) {
   const content = await readFile(file, 'utf8');
+  const logFile = join('article-logs', relative('src/content/articles', file));
+  try {
+    const log = await readFile(logFile, 'utf8');
+    if (!log.trim()) throw new Error('empty');
+  } catch {
+    console.error(`${file}: article log is missing or empty: ${logFile}`);
+    failed = true;
+  }
   const image = content.match(/^image:\s*["']?(\/images\/[^\s"']+)/m)?.[1];
   if (!image) { console.error(`${file}: image is missing`); failed = true; continue; }
   const path = resolve(root, `.${image}`);

@@ -23,34 +23,14 @@ npm.cmd ci
 
 ## 記事の作成から公開まで
 
-1. Codex にニュースのテーマを伝えます。`AGENTS.md` が調査、記事・画像生成、3つのコメントスキル、検証の流れを定めています。
+1. Codex にニュースのテーマを伝えます。`create-ai-news スキル` が調査、記事・画像生成、3つのコメントスキル、検証の流れを定めています。
 2. Codex が記事用ブランチに成果物をコミットして PR を作成します。本文、画像、出典、架空の3人のコメントを確認し、必要に応じて修正を依頼します。
 3. あなたが PR をマージすると、GitHub Actions が再検証して GitHub Pages に公開します。承認用フォルダはありません。
 
 初回は GitHub の **Settings → Pages → Build and deployment → Source** で **GitHub Actions** を選択してください。公開先は `https://yamashita-shingo.github.io/ai-news/` です。リポジトリ名や所有者が変わる場合は `astro.config.mjs` を更新します。
 
-## 記事形式
+## ハーネスの構成
 
-`src/content/articles/<slug>.md` に Markdown を置きます。画像は `public/images/` に置き、サイトルートからのパスを指定します。記事IDはファイル名です。
-
-```markdown
----
-title: "記事タイトル"
-description: "記事の概要"
-date: 2026-11-17
-category: "AI NEWS"
-image: "/images/example.png"
-imageAlt: "画像の内容を伝える説明"
-sources:
-  - title: "一次情報のタイトル"
-    url: "https://example.com/source"
-comments:
-  a: "辛口のコメント"
-  b: "専門家のコメント"
-  c: "一般読者のコメント"
----
-
-本文をここに記載します。
-```
-
-記事のメタデータは Astro のスキーマで検証し、画像の存在と本文の有無も確認します。コメントは AI が生成した架空の意見として表示します。
+- [記事制作スキル](.agents/skills/create-ai-news/SKILL.md)：調査から PR 作成までの流れ。記事形式と編集基準は必要に応じて参照します。
+- [開発と検証](docs/development.md)：検証コマンドと制約。
+- [確認と公開](docs/publishing.md)：PR の確認と公開の流れ。
