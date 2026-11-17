@@ -1,5 +1,8 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const articles = defineCollection({
   loader: glob({ pattern: '*/article.md', base: './src/content/articles', generateId: ({ entry }) => entry.split('/')[0] }),
