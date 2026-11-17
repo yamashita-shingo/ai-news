@@ -7,3 +7,13 @@
 html { scroll-behavior: smooth; }
 body { font-family: var(--font-sans); }
 ::selection { background: #b5f239; color: #101714; }
+
+/* Readable article structure, including tables on small screens. */
+.article-body h3 { margin: 2rem 0 .8rem; font-size: 1.2rem; font-weight: 700; color: #17221d; line-height: 1.6; }
+.article-body table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin: 2rem 0; font-size: .875rem; line-height: 1.8; }
+.article-body th, .article-body td { min-width: 8rem; padding: .85rem 1rem; border: 1px solid #d9e2d5; text-align: left; vertical-align: top; }
+.article-body th { background: #e8f0df; color: #25382b; font-weight: 700; }
+.article-body blockquote { margin: 2rem 0; padding: 1rem 1.5rem; border-left: 4px solid #9ecf36; background: #edf3e7; border-radius: 0 .75rem .75rem 0; }
+.article-body pre { overflow-x: auto; margin: 2rem 0; padding: 1.25rem; border-radius: .75rem; background: #17221d; color: #eaf1e5; line-height: 1.8; font-size: .875rem; }
+.article-body ol { list-style: decimal; padding-left: 1.5rem; }
+.article-body li { margin: .45rem 0; }

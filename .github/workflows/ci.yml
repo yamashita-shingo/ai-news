@@ -1,18 +1,113 @@
-name: Validate
+name: Validate and publish
 on:
-  pull_request:
   push:
     branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   validate:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Verify preview base URL
+        run: |
+          PREVIEW_BASE=/ai-news/previews/pr-42 npm run build
+          grep -q '/ai-news/previews/pr-42/_astro/' dist/index.html
       - run: node scripts/test-article-lifecycle.mjs
+      - name: Save production build
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-site
+          path: dist/
+          retention-days: 1
+
+  request-preview:
+    needs: validate
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (needs.validate.result == 'success' || (github.event.action == 'closed' && needs.validate.result == 'skipped'))
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Request Pages refresh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          gh workflow run ci.yml --ref main
+          if [ "$ACTION" != closed ]; then
+            echo "Preview URL: https://yamashita-shingo.github.io/ai-news/previews/pr-$PR_NUMBER/" >> "$GITHUB_STEP_SUMMARY"
+            echo "The preview becomes available after the Pages refresh finishes." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-site
+          path: dist
+      - name: Build public previews for same-repository PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GH_REPO/pulls?state=open&per_page=100"             --jq '.[] | select(.head.repo.full_name == .base.repo.full_name) | [.number, .head.sha] | @tsv' > "$RUNNER_TEMP/prs.tsv"
+          unset GH_TOKEN
+          while IFS=$'	' read -r number sha; do
+            [ -n "$number" ] || continue
+            case "$number" in *[!0-9]*|'') exit 1;; esac
+            git fetch --no-tags origin "$sha"
+            git worktree add --detach "$RUNNER_TEMP/preview-$number" "$sha"
+            (
+              cd "$RUNNER_TEMP/preview-$number"
+              npm ci
+              PREVIEW_BASE="/ai-news/previews/pr-$number" npm run build
+            )
+            mkdir -p "dist/previews/pr-$number"
+            cp -a "$RUNNER_TEMP/preview-$number/dist/." "dist/previews/pr-$number/"
+          done < "$RUNNER_TEMP/prs.tsv"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4
+        id: deployment
